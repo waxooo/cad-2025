@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация клиента — Автосервис</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .register-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .register-header h1 {
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+        }
+
+        .register-header p {
+            color: #7f8c8d;
+            margin: 0;
+        }
+
+        .message-container {
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2ecc71;
+        }
+
+        .register-form {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        .required {
+            color: #e74c3c;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .link-btn {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .link-btn:hover {
+            background-color: #f8f9fa;
+            text-decoration: underline;
+        }
+
+        .system-info {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            text-align: center;
+        }
+
+        .password-rules {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+            padding-left: 15px;
+        }
+
+        .phone-format {
+            font-size: 0.85rem;
+            color: #3498db;
+            margin-top: 5px;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 480px) {
+            .register-container {
+                margin: 20px;
+                padding: 25px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .links {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="register-container">
+    <div class="register-header">
+        <h1>📝 Регистрация клиента</h1>
+        <p>Автосервис "JavaCarService"</p>
+    </div>
+
+    <div class="message-container">
+        <div th:if="${errorMessage}" class="error-message">
+            ❌ <span th:text="${errorMessage}"></span>
+        </div>
+
+        <div th:if="${successMessage}" class="success-message">
+            ✅ <span th:text="${successMessage}"></span>
+        </div>
+    </div>
+
+    <form th:action="@{/register}" method="post" class="register-form" th:object="${client}">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="lastName">Фамилия <span class="required">*</span></label>
+                <input type="text" id="lastName" name="lastName"
+                       th:field="*{lastName}"
+                       placeholder="Иванов" required>
+            </div>
+            <div class="form-group">
+                <label for="firstName">Имя <span class="required">*</span></label>
+                <input type="text" id="firstName" name="firstName"
+                       th:field="*{firstName}"
+                       placeholder="Иван" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="patronymic">Отчество</label>
+            <input type="text" id="patronymic" name="patronymic"
+                   th:field="*{patronymic}"
+                   placeholder="Иванович">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email <span class="required">*</span></label>
+            <input type="email" id="email" name="email"
+                   th:field="*{email}"
+                   placeholder="ivan@example.com" required>
+        </div>
+
+        <div class="form-group">
+            <label for="phone">Телефон <span class="required">*</span></label>
+            <input type="text" id="phone" name="phone"
+                   th:field="*{phone}"
+                   placeholder="+7 (999) 123-45-67" required>
+            <div class="phone-format">Формат: +7 (XXX) XXX-XX-XX или 8XXXXXXXXXX</div>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Пароль <span class="required">*</span></label>
+            <input type="password" id="password" name="password" required>
+            <div class="password-rules">• Минимум 6 символов<br>• Должен содержать буквы и цифры</div>
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Подтверждение пароля <span class="required">*</span></label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required>
+        </div>
+
+        <button type="submit" class="register-btn">Зарегистрироваться</button>
+    </form>
+
+    <div class="links">
+        <a href="/login" th:href="@{/login}" class="link-btn">↩️ Уже есть аккаунт? Войти</a>
+        <a href="/" th:href="@{/}" class="link-btn">🏠 На главную</a>
+    </div>
+
+    <div class="system-info">
+        При регистрации вы автоматически получаете роль "Клиент"<br>
+        Система регистрации | Версия 2.0
+    </div>
+</div>
+</body>
+</html>

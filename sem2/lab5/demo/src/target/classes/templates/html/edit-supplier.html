@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактировать поставщика — Автосервис</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 40px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        /* Flash сообщения */
+        .flash-message {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #2ecc71;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #e74c3c;
+        }
+
+        /* Информация о поставщике */
+        .supplier-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 4px solid #3498db;
+        }
+
+        .supplier-info p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .supplier-info strong {
+            color: #2c3e50;
+        }
+
+        /* Форма */
+        form > div {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        input:required {
+            border-left: 3px solid #2ecc71;
+        }
+
+        .form-hint {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 2;
+            padding: 15px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .back-link {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            border: 2px solid #3498db;
+            text-align: center;
+        }
+
+        .back-link:hover {
+            background-color: #f8f9fa;
+            text-decoration: none;
+        }
+
+        /* Ошибки валидации */
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .field-error {
+            border-color: #e74c3c !important;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 25px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Редактировать поставщика</h1>
+
+    <!-- Информация о поставщике -->
+    <div class="supplier-info" th:if="${supplier}">
+        <p><strong>ID:</strong> <span th:text="${supplier.id}"></span></p>
+        <p><strong>Текущее название:</strong> <span th:text="${supplier.supplierName}"></span></p>
+        <p th:if="${supplier.contactPerson}"><strong>Контактное лицо:</strong> <span th:text="${supplier.contactPerson}"></span></p>
+        <p th:if="${supplier.phone}"><strong>Телефон:</strong> <span th:text="${supplier.phone}"></span></p>
+        <p th:if="${supplier.email}"><strong>Email:</strong> <span th:text="${supplier.email}"></span></p>
+        <p th:if="${supplier.address}"><strong>Адрес:</strong> <span th:text="${supplier.address}"></span></p>
+    </div>
+
+    <!-- Flash сообщения -->
+    <div th:if="${successMessage}" class="flash-message success">
+        ✅ <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="flash-message error">
+        ❌ <span th:text="${errorMessage}"></span>
+    </div>
+
+    <!-- Форма редактирования -->
+    <form th:action="@{/suppliers/update/{id}(id=${supplier.id})}" method="post" th:object="${supplier}">
+        <!-- Название -->
+        <div>
+            <label for="supplierName">Название поставщика *</label>
+            <input type="text" id="supplierName" th:field="*{supplierName}"
+                   placeholder="Например: АвтоДетальСервис"
+                   th:classappend="${#fields.hasErrors('supplierName')} ? 'field-error' : ''"
+                   required>
+            <div th:if="${#fields.hasErrors('supplierName')}" class="error-message">
+                <span th:errors="*{supplierName}"></span>
+            </div>
+            <div class="form-hint">От 2 до 200 символов, должно быть уникальным</div>
+        </div>
+
+        <!-- Контактное лицо -->
+        <div>
+            <label for="contactPerson">Контактное лицо</label>
+            <input type="text" id="contactPerson" th:field="*{contactPerson}"
+                   placeholder="Иванов Иван Иванович"
+                   th:classappend="${#fields.hasErrors('contactPerson')} ? 'field-error' : ''">
+            <div th:if="${#fields.hasErrors('contactPerson')}" class="error-message">
+                <span th:errors="*{contactPerson}"></span>
+            </div>
+            <div class="form-hint">Не более 150 символов</div>
+        </div>
+
+        <!-- Телефон -->
+        <div>
+            <label for="phone">Телефон</label>
+            <input type="text" id="phone" th:field="*{phone}"
+                   placeholder="+7 (XXX) XXX-XX-XX"
+                   th:classappend="${#fields.hasErrors('phone')} ? 'field-error' : ''">
+            <div th:if="${#fields.hasErrors('phone')}" class="error-message">
+                <span th:errors="*{phone}"></span>
+            </div>
+            <div class="form-hint">Формат: +7 (XXX) XXX-XX-XX или 8XXXXXXXXXX</div>
+        </div>
+
+        <!-- Email -->
+        <div>
+            <label for="email">Email</label>
+            <input type="email" id="email" th:field="*{email}"
+                   placeholder="example@mail.ru"
+                   th:classappend="${#fields.hasErrors('email')} ? 'field-error' : ''">
+            <div th:if="${#fields.hasErrors('email')}" class="error-message">
+                <span th:errors="*{email}"></span>
+            </div>
+            <div class="form-hint">Не более 100 символов</div>
+        </div>
+
+        <!-- Адрес -->
+        <div>
+            <label for="address">Адрес</label>
+            <input type="text" id="address" th:field="*{address}"
+                   placeholder="г. Москва, ул. Ленина, д. 1"
+                   th:classappend="${#fields.hasErrors('address')} ? 'field-error' : ''">
+            <div th:if="${#fields.hasErrors('address')}" class="error-message">
+                <span th:errors="*{address}"></span>
+            </div>
+            <div class="form-hint">Не более 500 символов</div>
+        </div>
+
+        <div class="button-group">
+            <button type="submit">Сохранить изменения</button>
+            <a th:href="@{/suppliers}" class="back-link">Отмена</a>
+        </div>
+    </form>
+
+    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+        <small style="color: #7f8c8d;">
+            * Поля, обязательные для заполнения<br>
+            Изменения вступят в силу после сохранения
+        </small>
+    </div>
+</div>
+</body>
+</html>

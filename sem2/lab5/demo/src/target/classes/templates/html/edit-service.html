@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактировать услугу</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 40px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        /* Flash сообщения */
+        .flash-message {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #2ecc71;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #e74c3c;
+        }
+
+        /* Форма */
+        form > div {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #9b59b6;
+            outline: none;
+        }
+
+        input:required {
+            border-left: 3px solid #2ecc71;
+        }
+
+        .time-inputs {
+            display: flex;
+            gap: 15px;
+        }
+
+        .time-inputs > div {
+            flex: 1;
+        }
+
+        .cost-preview {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #2ecc71;
+            margin-top: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.3);
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .back-link:hover {
+            background-color: #f8f9fa;
+            text-decoration: underline;
+        }
+
+        /* Информация об услуге */
+        .service-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 4px solid #9b59b6;
+        }
+
+        .service-info p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .service-info strong {
+            color: #2c3e50;
+        }
+
+        .service-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .service-details {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .service-details > div {
+            flex: 1;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 25px;
+            }
+
+            .service-details {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .time-inputs {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Редактировать услугу</h1>
+
+    <!-- Информация об услуге -->
+    <div class="service-info" th:if="${service}">
+        <p><strong>ID:</strong> <span th:text="${service.id}"></span></p>
+        <p class="service-name" th:text="${service.serviceName}"></p>
+        <div class="service-details">
+            <div>
+                <p><strong>Стоимость:</strong>
+                    <span style="color: #2ecc71; font-weight: bold;"
+                          th:text="${service.cost} + ' руб.'"></span>
+                </p>
+                <p><strong>Время выполнения:</strong>
+                    <span style="color: #f39c12; font-weight: 500;"
+                          th:text="${service.executionTime}"></span>
+                </p>
+            </div>
+            <div>
+                <p th:if="${service.description}">
+                    <strong>Описание:</strong><br>
+                    <span style="font-size: 0.9rem;" th:text="${service.description}"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash сообщения -->
+    <div th:if="${successMessage}" class="flash-message success">
+        ✅ <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="flash-message error">
+        ❌ <span th:text="${errorMessage}"></span>
+    </div>
+
+    <form th:action="@{/services/update/{id}(id=${service.id})}" method="post" th:object="${service}">
+        <div>
+            <label for="serviceName">Название услуги *</label>
+            <input type="text" id="serviceName" name="serviceName"
+                   th:field="*{serviceName}"
+                   placeholder="Например: Замена масла двигателя" required>
+        </div>
+
+        <div>
+            <label for="cost">Стоимость (руб.) *</label>
+            <input type="number" id="cost" name="cost"
+                   th:field="*{cost}"
+                   placeholder="1500.00" step="0.01" min="0" required>
+            <div id="costPreview" class="cost-preview" th:text="*{cost} + ' руб.'"></div>
+        </div>
+
+        <div>
+            <label>Время выполнения:</label>
+            <div class="time-inputs">
+                <div>
+                    <label for="executionHours">Часы</label>
+                    <input type="number" id="executionHours" name="executionHours"
+                           th:field="*{executionHours}"
+                           placeholder="0" min="0" max="24">
+                </div>
+                <div>
+                    <label for="executionMinutes">Минуты</label>
+                    <input type="number" id="executionMinutes" name="executionMinutes"
+                           th:field="*{executionMinutes}"
+                           placeholder="30" min="0" max="59">
+                </div>
+            </div>
+            <div id="timePreview" style="color: #f39c12; font-weight: 500; margin-top: 5px;"
+                 th:text="${service.executionTime}"></div>
+        </div>
+
+        <div>
+            <label for="description">Описание услуги</label>
+            <textarea id="description" name="description"
+                      th:field="*{description}"
+                      placeholder="Подробное описание услуги..." rows="4"></textarea>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-top: 30px;">
+            <button type="submit" style="flex: 2;">Сохранить изменения</button>
+            <a th:href="@{/services}" class="back-link" style="flex: 1; text-align: center;">Отмена</a>
+        </div>
+    </form>
+
+    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+        <small style="color: #7f8c8d;">
+            * Поля, обязательные для заполнения<br>
+            Время выполнения: часы (0-24) и минуты (0-59)<br>
+            Стоимость указывается в рублях
+        </small>
+    </div>
+</div>
+
+<script>
+    // Обновление превью стоимости
+    const costInput = document.getElementById('cost');
+    const costPreview = document.getElementById('costPreview');
+
+    costInput.addEventListener('input', function() {
+        if (this.value.trim() !== '') {
+            costPreview.textContent = parseFloat(this.value).toFixed(2) + ' руб.';
+        } else {
+            costPreview.textContent = '0.00 руб.';
+        }
+    });
+
+    // Обновление превью времени выполнения
+    const hoursInput = document.getElementById('executionHours');
+    const minutesInput = document.getElementById('executionMinutes');
+    const timePreview = document.getElementById('timePreview');
+
+    function updateTimePreview() {
+        const hours = parseInt(hoursInput.value) || 0;
+        const minutes = parseInt(minutesInput.value) || 0;
+
+        let timeStr = '';
+        if (hours > 0 && minutes > 0) {
+            timeStr = hours + ' ч. ' + minutes + ' мин.';
+        } else if (hours > 0) {
+            timeStr = hours + ' ч.';
+        } else if (minutes > 0) {
+            timeStr = minutes + ' мин.';
+        } else {
+            timeStr = 'Не указано';
+        }
+
+        timePreview.textContent = timeStr;
+    }
+
+    hoursInput.addEventListener('input', updateTimePreview);
+    minutesInput.addEventListener('input', updateTimePreview);
+</script>
+</body>
+</html>

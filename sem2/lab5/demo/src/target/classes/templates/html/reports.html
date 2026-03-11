@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Формирование отчетов — Автосервис</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        /* Хедер с авторизацией */
+        .auth-info {
+            text-align: right;
+            padding: 15px 30px;
+            background-color: #ecf0f1;
+            font-size: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .auth-info a {
+            color: #3498db;
+            text-decoration: none;
+            margin-left: 15px;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .auth-info a:hover {
+            background-color: #dfe6e9;
+            text-decoration: none;
+        }
+
+        /* Контейнер */
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* Навигация */
+        .navigation {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+            flex-wrap: wrap;
+        }
+
+        .navigation a {
+            text-decoration: none;
+            color: #3498db;
+            padding: 10px 20px;
+            border-radius: 5px;
+            background-color: white;
+            border: 1px solid #ddd;
+            transition: all 0.3s;
+        }
+
+        .navigation a:hover {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        /* Заголовок */
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        h1 span.icon {
+            font-size: 2rem;
+        }
+
+        /* Секции */
+        .form-section, .info-section {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            font-size: 1.2rem;
+        }
+
+        /* Категории отчетов */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .category-card {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .category-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #3498db;
+        }
+
+        .category-card.selected {
+            border-color: #3498db;
+            background-color: #e8f4fc;
+        }
+
+        .category-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .category-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .category-desc {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            line-height: 1.4;
+        }
+
+        /* Периоды */
+        .periods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .period-card {
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .period-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #2ecc71;
+        }
+
+        .period-card.selected {
+            border-color: #2ecc71;
+            background-color: #e8f8ef;
+        }
+
+        .period-icon {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .period-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Кастомный период */
+        .custom-period {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin-top: 20px;
+            border: 1px solid #e9ecef;
+            display: none;
+        }
+
+        .custom-period.active {
+            display: block;
+        }
+
+        .date-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        /* Формы */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        /* Кнопка формирования */
+        .generate-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 30px;
+        }
+
+        .generate-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .generate-btn:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        /* Информация о выборе */
+        .selection-info {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 25px;
+            display: none;
+        }
+
+        .selection-info.active {
+            display: block;
+        }
+
+        .selection-text {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        /* Сообщения */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #2ecc71;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #e74c3c;
+        }
+
+        .alert-info {
+            background-color: #e8f4f8;
+            color: #0c5460;
+            border-color: #3498db;
+        }
+
+        /* Инструкция */
+        .info-section {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+
+        .info-section h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .info-section ol {
+            color: #555;
+            line-height: 1.6;
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        .info-section li {
+            margin-bottom: 10px;
+        }
+
+        /* Футер */
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #7f8c8d;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .categories-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .periods-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .date-inputs {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 0 15px;
+            }
+
+            .auth-info {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .auth-info a {
+                margin: 5px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .periods-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .navigation {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .navigation a {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="auth-info">
+    <span th:if="${isAuthenticated}">
+        Вы вошли как: <strong th:text="${userName}"></strong> |
+        Роль: <strong th:text="${userRole}"></strong>
+    </span>
+    <div>
+        <a href="/">На главную</a>
+        <a href="/logout" th:href="@{/logout}">Выйти</a>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Навигация -->
+    <div class="navigation">
+        <a href="/">На главную</a>
+        <a href="/clients">Клиенты</a>
+        <a href="/cars">Автомобили</a>
+        <a href="/services">Услуги</a>
+        <a href="/employees">Сотрудники</a>
+        <a href="/spare-parts">Запчасти</a>
+        <a href="/suppliers">Поставщики</a>
+        <a href="/service-orders">Заказы</a>
+    </div>
+
+    <h1>
+        <span class="icon">📊</span>
+        Формирование отчета
+    </h1>
+
+    <!-- Сообщения об ошибках/успехе -->
+    <div th:if="${successMessage}" class="alert alert-success">
+        ✅ <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-error">
+        ❌ <span th:text="${errorMessage}"></span>
+    </div>
+
+    <!-- Форма создания отчета -->
+    <div class="form-section">
+        <form id="reportForm" action="/reports/generate" method="POST">
+
+            <!-- Шаг 1: Выбор категории -->
+            <h2>1. Выберите категорию отчета</h2>
+            <div class="categories-grid">
+                <!-- Клиенты -->
+                <div class="category-card" data-category="clients" onclick="selectCategory('clients')">
+                    <span class="category-icon">👥</span>
+                    <div class="category-name">Клиенты</div>
+                    <div class="category-desc">Отчет по клиентам и их заказам</div>
+                </div>
+
+                <!-- Сотрудники -->
+                <div class="category-card" data-category="employees" onclick="selectCategory('employees')">
+                    <span class="category-icon">👨‍💼</span>
+                    <div class="category-name">Сотрудники</div>
+                    <div class="category-desc">Отчет по работе сотрудников</div>
+                </div>
+
+                <!-- Автомобили -->
+                <div class="category-card" data-category="cars" onclick="selectCategory('cars')">
+                    <span class="category-icon">🚗</span>
+                    <div class="category-name">Автомобили</div>
+                    <div class="category-desc">Отчет по автомобилям клиентов</div>
+                </div>
+
+                <!-- Услуги -->
+                <div class="category-card" data-category="services" onclick="selectCategory('services')">
+                    <span class="category-icon">🛠️</span>
+                    <div class="category-name">Услуги</div>
+                    <div class="category-desc">Отчет по оказанным услугам</div>
+                </div>
+
+                <!-- Запчасти -->
+                <div class="category-card" data-category="parts" onclick="selectCategory('parts')">
+                    <span class="category-icon">🔧</span>
+                    <div class="category-name">Запчасти</div>
+                    <div class="category-desc">Отчет по запчастям на складе</div>
+                </div>
+
+                <!-- Заказы -->
+                <div class="category-card" data-category="orders" onclick="selectCategory('orders')">
+                    <span class="category-icon">📋</span>
+                    <div class="category-name">Заказы</div>
+                    <div class="category-desc">Отчет по заказам на обслуживание</div>
+                </div>
+
+                <!-- Поставщики -->
+                <div class="category-card" data-category="suppliers" onclick="selectCategory('suppliers')">
+                    <span class="category-icon">🏢</span>
+                    <div class="category-name">Поставщики</div>
+                    <div class="category-desc">Отчет по поставщикам запчастей</div>
+                </div>
+
+                <!-- Финансы -->
+                <div class="category-card" data-category="financial" onclick="selectCategory('financial')">
+                    <span class="category-icon">💰</span>
+                    <div class="category-name">Финансы</div>
+                    <div class="category-desc">Финансовый отчет по работе</div>
+                </div>
+            </div>
+            <input type="hidden" id="category" name="category" value="">
+
+            <!-- Шаг 2: Выбор периода -->
+            <h2 style="margin-top: 40px;">2. Выберите период отчета</h2>
+            <div class="periods-grid">
+                <!-- За всё время -->
+                <div class="period-card" data-period="all" onclick="selectPeriod('all')">
+                    <span class="period-icon">∞</span>
+                    <div class="period-name">За всё время</div>
+                </div>
+
+                <!-- За год -->
+                <div class="period-card" data-period="year" onclick="selectPeriod('year')">
+                    <span class="period-icon">📅</span>
+                    <div class="period-name">За этот год</div>
+                </div>
+
+                <!-- За месяц -->
+                <div class="period-card" data-period="month" onclick="selectPeriod('month')">
+                    <span class="period-icon">📆</span>
+                    <div class="period-name">За этот месяц</div>
+                </div>
+
+                <!-- За неделю -->
+                <div class="period-card" data-period="week" onclick="selectPeriod('week')">
+                    <span class="period-icon">📅</span>
+                    <div class="period-name">За эту неделю</div>
+                </div>
+
+                <!-- За сегодня -->
+                <div class="period-card" data-period="today" onclick="selectPeriod('today')">
+                    <span class="period-icon">📅</span>
+                    <div class="period-name">За сегодня</div>
+                </div>
+
+                <!-- Кастомный период -->
+                <div class="period-card" data-period="custom" onclick="selectPeriod('custom')">
+                    <span class="period-icon">📅</span>
+                    <div class="period-name">Выбрать период</div>
+                </div>
+            </div>
+            <input type="hidden" id="period" name="period" value="">
+
+            <!-- Кастомный выбор дат -->
+            <div class="custom-period" id="customPeriodSection">
+                <h3>Укажите диапазон дат</h3>
+                <div class="date-inputs">
+                    <div class="form-group">
+                        <label for="startDate">Дата начала</label>
+                        <input type="date" id="startDate" name="startDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">Дата окончания</label>
+                        <input type="date" id="endDate" name="endDate" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Информация о выбранных параметрах -->
+            <div class="selection-info" id="selectionInfo">
+                <p class="selection-text">
+                    Вы формируете отчет:
+                    <strong id="selectedCategoryText">[не выбрано]</strong>
+                    за период:
+                    <strong id="selectedPeriodText">[не выбрано]</strong>
+                </p>
+            </div>
+
+            <!-- Кнопка формирования отчета -->
+            <button type="submit" class="generate-btn" id="generateBtn" disabled>
+                📄 СФОРМИРОВАТЬ ОТЧЕТ (TXT)
+            </button>
+        </form>
+    </div>
+
+    <!-- Инструкция -->
+    <div class="info-section">
+        <h3>📝 Инструкция по формированию отчета:</h3>
+        <ol>
+            <li>Выберите категорию отчета (например, "Клиенты" или "Заказы")</li>
+            <li>Выберите период формирования отчета</li>
+            <li>Если выбрано "Выбрать период", укажите даты начала и окончания</li>
+            <li>Нажмите кнопку "СФОРМИРОВАТЬ ОТЧЕТ"</li>
+            <li>Отчет будет скачан в формате TXT</li>
+        </ol>
+    </div>
+
+    <div class="footer">
+        <p>© 2025 Автосервис "JavaCarService". Система отчетов v2.0</p>
+        <p style="font-size: 0.8rem; margin-top: 5px; color: #95a5a6;">
+            Отчеты формируются в текстовом формате для удобства просмотра и анализа
+        </p>
+    </div>
+</div>
+
+<script>
+    // JavaScript код остается без изменений
+    let selectedCategory = '';
+    let selectedPeriod = '';
+
+    // Выбор категории
+    function selectCategory(category) {
+        selectedCategory = category;
+
+        // Сброс выбранных карточек категорий
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+
+        // Выделение выбранной карточки
+        document.querySelector(`.category-card[data-category="${category}"]`).classList.add('selected');
+
+        // Обновление скрытого поля
+        document.getElementById('category').value = category;
+
+        // Обновление текста выбора
+        updateSelectionInfo();
+        checkFormCompletion();
+    }
+
+    // Выбор периода
+    function selectPeriod(period) {
+        selectedPeriod = period;
+
+        // Сброс выбранных карточек периодов
+        document.querySelectorAll('.period-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+
+        // Выделение выбранной карточки
+        document.querySelector(`.period-card[data-period="${period}"]`).classList.add('selected');
+
+        // Показать/скрыть кастомный период
+        const customPeriodSection = document.getElementById('customPeriodSection');
+        if (period === 'custom') {
+            customPeriodSection.classList.add('active');
+        } else {
+            customPeriodSection.classList.remove('active');
+        }
+
+        // Обновление скрытого поля
+        document.getElementById('period').value = period;
+
+        // Обновление текста выбора
+        updateSelectionInfo();
+        checkFormCompletion();
+    }
+
+    // Обновление информации о выбранных параметрах
+    function updateSelectionInfo() {
+        const categoryText = document.getElementById('selectedCategoryText');
+        const periodText = document.getElementById('selectedPeriodText');
+        const selectionInfo = document.getElementById('selectionInfo');
+
+        if (selectedCategory) {
+            const categoryNames = {
+                'clients': 'Клиенты',
+                'employees': 'Сотрудники',
+                'cars': 'Автомобили',
+                'services': 'Услуги',
+                'parts': 'Запчасти',
+                'orders': 'Заказы',
+                'suppliers': 'Поставщики',
+                'financial': 'Финансы'
+            };
+            categoryText.textContent = categoryNames[selectedCategory] || selectedCategory;
+        } else {
+            categoryText.textContent = '[не выбрано]';
+        }
+
+        if (selectedPeriod) {
+            const periodNames = {
+                'all': 'За всё время',
+                'year': 'За этот год',
+                'month': 'За этот месяц',
+                'week': 'За эту неделю',
+                'today': 'За сегодня',
+                'custom': 'Выбранный период'
+            };
+            periodText.textContent = periodNames[selectedPeriod] || selectedPeriod;
+
+            // Если выбран кастомный период, добавить даты
+            if (selectedPeriod === 'custom') {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                if (startDate && endDate) {
+                    periodText.textContent = `с ${formatDate(startDate)} по ${formatDate(endDate)}`;
+                }
+            }
+        } else {
+            periodText.textContent = '[не выбрано]';
+        }
+
+        // Показать блок информации, если выбрана категория
+        if (selectedCategory) {
+            selectionInfo.classList.add('active');
+        } else {
+            selectionInfo.classList.remove('active');
+        }
+    }
+
+    // Проверка заполнения формы
+    function checkFormCompletion() {
+        const generateBtn = document.getElementById('generateBtn');
+
+        // Для кастомного периода проверяем даты
+        if (selectedPeriod === 'custom') {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            if (selectedCategory && startDate && endDate && startDate <= endDate) {
+                generateBtn.disabled = false;
+            } else {
+                generateBtn.disabled = true;
+            }
+        } else {
+            // Для остальных периодов достаточно категории и периода
+            generateBtn.disabled = !(selectedCategory && selectedPeriod);
+        }
+    }
+
+    // Форматирование даты для отображения
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    }
+
+    // Обработчики для полей дат
+    document.getElementById('startDate').addEventListener('change', function() {
+        if (selectedPeriod === 'custom') {
+            updateSelectionInfo();
+            checkFormCompletion();
+        }
+    });
+
+    document.getElementById('endDate').addEventListener('change', function() {
+        if (selectedPeriod === 'custom') {
+            updateSelectionInfo();
+            checkFormCompletion();
+        }
+    });
+
+    // Установка текущей даты по умолчанию для кастомного периода
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date().toISOString().split('T')[0];
+        const monthAgo = new Date();
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        const monthAgoStr = monthAgo.toISOString().split('T')[0];
+
+        document.getElementById('startDate').value = monthAgoStr;
+        document.getElementById('endDate').value = today;
+
+        // Если на странице уже есть выбранные значения из формы
+        const categoryFromForm = document.getElementById('category').value;
+        const periodFromForm = document.getElementById('period').value;
+
+        if (categoryFromForm) {
+            selectCategory(categoryFromForm);
+        }
+        if (periodFromForm) {
+            selectPeriod(periodFromForm);
+        }
+    });
+</script>
+</body>
+</html>

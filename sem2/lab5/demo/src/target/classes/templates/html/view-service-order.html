@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Просмотр заказа №<span th:text="${order.id}"></span> — Автосервис</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .auth-info {
+            text-align: right;
+            padding: 15px 30px;
+            background-color: #ecf0f1;
+            font-size: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .auth-info a {
+            color: #3498db;
+            text-decoration: none;
+            margin-left: 15px;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .auth-info a:hover {
+            background-color: #dfe6e9;
+            text-decoration: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .navigation {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+            flex-wrap: wrap;
+        }
+
+        .navigation a {
+            text-decoration: none;
+            color: #3498db;
+            padding: 10px 20px;
+            border-radius: 5px;
+            background-color: white;
+            border: 1px solid #ddd;
+            transition: all 0.3s;
+        }
+
+        .navigation a:hover {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .order-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 900px) {
+            .order-details {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .info-card {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-label {
+            flex: 1;
+            font-weight: 500;
+            color: #555;
+            min-width: 150px;
+        }
+
+        .info-value {
+            flex: 2;
+            color: #2c3e50;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .status-active {
+            background-color: #ffeaa7;
+            color: #856404;
+        }
+
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        /* Стили для таблицы услуг */
+        .services-card {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .services-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .services-table th {
+            background-color: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            border-bottom: 2px solid #eee;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .services-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        .services-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .total-cost {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            text-align: right;
+            font-size: 1.3rem;
+        }
+
+        .total-cost strong {
+            color: #2c3e50;
+            font-size: 1.5rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: #1abc9c;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #16a085;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .empty-services {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #7f8c8d;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .info-row {
+                flex-direction: column;
+            }
+
+            .info-label {
+                margin-bottom: 5px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="auth-info">
+    <span th:if="${isAuthenticated}">
+        Вы вошли как: <strong th:text="${userName}"></strong> |
+        Роль: <strong th:text="${userRole}"></strong> |
+        <a href="/logout" th:href="@{/logout}">Выйти</a>
+    </span>
+</div>
+
+<div class="container">
+    <!-- Навигация -->
+    <div class="navigation">
+        <a href="/">На главную</a>
+        <a href="/service-orders">Все заказы</a>
+        <a href="/clients">Клиенты</a>
+        <a href="/cars">Автомобили</a>
+    </div>
+
+    <h1>Просмотр заказа №<span th:text="${order.id}"></span></h1>
+
+    <div class="order-details">
+        <!-- Информация о заказе -->
+        <div class="info-card">
+            <h2>Информация о заказе</h2>
+            <div class="info-row">
+                <div class="info-label">Статус:</div>
+                <div class="info-value">
+                    <span th:if="${order.completionDate == null}" class="status-badge status-active">В работе</span>
+                    <span th:if="${order.completionDate != null}" class="status-badge status-completed">Завершён</span>
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Дата создания:</div>
+                <div class="info-value" th:text="${#temporals.format(order.orderDate, 'dd.MM.yyyy HH:mm')}"></div>
+            </div>
+            <div class="info-row" th:if="${order.completionDate}">
+                <div class="info-label">Дата завершения:</div>
+                <div class="info-value" th:text="${#temporals.format(order.completionDate, 'dd.MM.yyyy HH:mm')}"></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Общая стоимость:</div>
+                <div class="info-value" style="font-weight: bold; color: #2c3e50;"
+                     th:text="${'₽' + #numbers.formatDecimal(order.totalCost, 1, 2, 'COMMA')}"></div>
+            </div>
+        </div>
+
+        <!-- Информация о клиенте и автомобиле -->
+        <div class="info-card">
+            <h2>Клиент и автомобиль</h2>
+            <div class="info-row">
+                <div class="info-label">Клиент:</div>
+                <div class="info-value">
+                    <div th:text="${order.client?.lastName + ' ' + order.client?.firstName}"></div>
+                    <small style="color: #7f8c8d;" th:text="${order.client?.phone}"></small>
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Автомобиль:</div>
+                <div class="info-value">
+                    <div th:text="${order.car?.brand + ' ' + order.car?.model}"></div>
+                    <small style="color: #7f8c8d;" th:text="${order.car?.licensePlate}"></small>
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Год выпуска:</div>
+                <div class="info-value" th:text="${order.car?.yearOfManufacture}"></div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">VIN:</div>
+                <div class="info-value" th:text="${order.car?.vin}"></div>
+            </div>
+        </div>
+
+        <!-- Информация о сотрудниках -->
+        <div class="info-card">
+            <h2>Сотрудники</h2>
+            <div class="info-row">
+                <div class="info-label">Механик:</div>
+                <div class="info-value">
+                    <div th:text="${order.mechanic?.lastName + ' ' + order.mechanic?.firstName}"></div>
+                    <small style="color: #7f8c8d;" th:text="${order.mechanic?.phone}"></small>
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Приёмщик:</div>
+                <div class="info-value">
+                    <div th:text="${order.receptionist?.lastName + ' ' + order.receptionist?.firstName}"></div>
+                    <small style="color: #7f8c8d;" th:text="${order.receptionist?.phone}"></small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список услуг -->
+    <div class="services-card">
+        <h2>Выполненные услуги</h2>
+
+        <div th:if="${orderServices != null && !orderServices.isEmpty()}">
+            <table class="services-table">
+                <thead>
+                <tr>
+                    <th>Услуга</th>
+                    <th>Описание</th>
+                    <th>Количество</th>
+                    <th>Цена за единицу</th>
+                    <th>Сумма</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="orderService : ${orderServices}">
+                    <td th:text="${orderService.service.serviceName}"></td>
+                    <td>
+                        <small style="color: #7f8c8d;" th:text="${orderService.service.description}"></small>
+                    </td>
+                    <td th:text="${orderService.quantity}"></td>
+                    <td th:text="${'₽' + #numbers.formatDecimal(orderService.priceAtMoment, 1, 2, 'COMMA')}"></td>
+                    <td style="font-weight: bold;">
+                        <span th:text="${'₽' + #numbers.formatDecimal(orderService.getTotalPrice(), 1, 2, 'COMMA')}"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="total-cost">
+                <strong>Итого: <span th:text="${'₽' + #numbers.formatDecimal(order.totalCost, 1, 2, 'COMMA')}"></span></strong>
+            </div>
+        </div>
+
+        <div th:if="${orderServices == null || orderServices.isEmpty()}" class="empty-services">
+            <p>В этом заказе нет услуг.</p>
+        </div>
+    </div>
+
+    <!-- Кнопки действий -->
+    <div class="actions">
+        <a href="/service-orders" class="btn btn-primary">← Назад к списку</a>
+        <span sec:authorize="hasAnyRole('ADMIN', 'MANAGER')">
+            <a th:href="@{/service-orders/edit/{id}(id=${order.id})}" class="btn btn-secondary">Редактировать</a>
+        </span>
+        <span sec:authorize="hasAnyRole('ADMIN', 'MANAGER', 'MECHANIC')">
+            <a th:if="${order.completionDate == null}"
+               th:href="@{/service-orders/complete/{id}(id=${order.id})}"
+               class="btn btn-secondary"
+               onclick="return confirm('Отметить заказ как завершённый?')">
+                ✅ Завершить заказ
+            </a>
+        </span>
+        <span sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/service-orders/delete/{id}(id=${order.id})}"
+               class="btn btn-danger"
+               onclick="return confirm('Вы уверены, что хотите удалить заказ? Все связанные услуги также будут удалены.')">
+                Удалить заказ
+            </a>
+        </span>
+    </div>
+
+    <div class="footer">
+        <p>© 2025 Автосервис "JavaCarService". Spring Boot и PostgreSQL.</p>
+    </div>
+</div>
+</body>
+</html>
