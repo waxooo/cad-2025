@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная — TravelDream</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f9;
+            color: #2c3e50;
+        }
+        .header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .header .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            text-decoration: none;
+        }
+        .header .logo span { color: #3498db; }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #34495e;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .nav-links a:hover { background-color: #ecf0f1; }
+        .nav-links .auth-buttons a {
+            border: 1px solid #3498db;
+            color: #3498db;
+        }
+        .nav-links .auth-buttons a:first-child { margin-right: 10px; }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        h1 { margin-top: 0; }
+        .hero {
+            background-color: #3498db;
+            color: white;
+            padding: 60px 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .hero h1 { font-size: 2.5rem; margin-bottom: 20px; }
+        .hero p { font-size: 1.2rem; margin-bottom: 30px; }
+        .hero .btn {
+            background-color: white;
+            color: #3498db;
+            padding: 12px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin: 0 10px;
+            display: inline-block;
+        }
+        .hero .btn-outline {
+            background: transparent;
+            border: 1px solid white;
+            color: white;
+        }
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .tour-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        .tour-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .tour-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+        .tour-card-content {
+            padding: 20px;
+        }
+        .tour-card h3 { margin: 0 0 10px; }
+        .tour-card p { color: #7f8c8d; margin-bottom: 20px; }
+        .tour-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .price { font-size: 1.3rem; font-weight: 700; color: #3498db; }
+        .btn-small {
+            padding: 6px 12px;
+            border: 1px solid #3498db;
+            border-radius: 4px;
+            color: #3498db;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .btn-small:hover { background: #3498db; color: white; }
+        .advantages {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        .advantage {
+            text-align: center;
+            background: white;
+            padding: 30px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .advantage .icon { font-size: 3rem; margin-bottom: 15px; }
+        .footer {
+            background-color: #2c3e50;
+            color: #bdc3c7;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+        .footer a { color: #ecf0f1; text-decoration: none; margin: 0 10px; }
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 15px; }
+            .nav-links { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <a href="/" th:href="@{/}" class="logo">Travel<span>Dream</span></a>
+    <div class="nav-links">
+        <a href="/" th:href="@{/}">Главная</a>
+        <a href="/templates/tours" th:href="@{/tours}">Туры</a>
+        <a th:if="${isAuthenticated}" th:href="@{/client/dashboard}">Личный кабинет</a>
+        <a th:if="${isAuthenticated and (userRole == 'ADMIN' or userRole == 'MANAGER')}" th:href="@{/clients}">Клиенты</a>
+        <a th:if="${isAuthenticated and (userRole == 'ADMIN' or userRole == 'MANAGER')}" th:href="@{/reports}">Отчеты</a>
+        <div class="auth-buttons" th:unless="${isAuthenticated}">
+            <a th:href="@{/login}">Вход</a>
+            <a th:href="@{/register}">Регистрация</a>
+        </div>
+        <span th:if="${isAuthenticated}">
+                <span th:text="${userName}"></span> |
+                <a th:href="@{/logout}">Выйти</a>
+            </span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="hero">
+        <h1>Открой мир с TravelDream</h1>
+        <p>Мы создаем незабываемые путешествия по всему миру.</p>
+        <div>
+            <a th:href="@{/tours}" class="btn">Найти тур</a>
+            <a th:href="@{/register}" th:if="${not isAuthenticated}" class="btn btn-outline">Присоединиться</a>
+        </div>
+    </div>
+
+    <h2 class="section-title">Популярные направления</h2>
+    <div class="tour-grid">
+        <div class="tour-card">
+            <img src="/images/turkey.jpg" alt="Турция">
+            <div class="tour-card-content">
+                <h3>Стамбул, Турция</h3>
+                <p>Город на границе Европы и Азии с богатой историей.</p>
+                <div class="tour-card-footer">
+                    <span class="price">150 000 ₽</span>
+                    <a th:href="@{/tours}" class="btn-small">Подробнее</a>
+                </div>
+            </div>
+        </div>
+        <div class="tour-card">
+            <img src="/images/italy.jpg" alt="Италия">
+            <div class="tour-card-content">
+                <h3>Рим, Италия</h3>
+                <p>Вечный город с древней историей, искусством и кухней.</p>
+                <div class="tour-card-footer">
+                    <span class="price">200 000 ₽</span>
+                    <a th:href="@{/tours}" class="btn-small">Подробнее</a>
+                </div>
+            </div>
+        </div>
+        <div class="tour-card">
+            <img src="/images/france.jpg" alt="Франция">
+            <div class="tour-card-content">
+                <h3>Париж, Франция</h3>
+                <p>Романтическая столица с Эйфелевой башней и Лувром.</p>
+                <div class="tour-card-footer">
+                    <span class="price">200 000 ₽</span>
+                    <a th:href="@{/tours}" class="btn-small">Подробнее</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="text-align: center; margin: 30px 0;">
+        <a th:href="@{/tours}" class="btn-small">Все туры</a>
+    </div>
+
+    <h2 class="section-title">Почему выбирают нас?</h2>
+    <div class="advantages">
+        <div class="advantage">
+            <div class="icon">🔒</div>
+            <h4>Надежность</h4>
+            <p>10 лет успешной работы</p>
+        </div>
+        <div class="advantage">
+            <div class="icon">💰</div>
+            <h4>Лучшие цены</h4>
+            <p>Гарантия выгоды</p>
+        </div>
+        <div class="advantage">
+            <div class="icon">📞</div>
+            <h4>Поддержка 24/7</h4>
+            <p>Круглосуточная помощь</p>
+        </div>
+        <div class="advantage">
+            <div class="icon">🏆</div>
+            <h4>Профессионализм</h4>
+            <p>Лицензированные гиды</p>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <p>© 2025 TravelDream Agency. Все права защищены. | <a href="#">Политика конфиденциальности</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Туры — TravelDream</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f9;
+            color: #2c3e50;
+        }
+        .header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .header .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            text-decoration: none;
+        }
+        .header .logo span { color: #3498db; }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #34495e;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .nav-links a:hover { background-color: #ecf0f1; }
+        .nav-links .auth-buttons a {
+            border: 1px solid #3498db;
+            color: #3498db;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        h1, h2 { color: #2c3e50; }
+        .search-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        .form-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            flex: 1 1 200px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .btn {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover { background-color: #2980b9; }
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+        .btn-secondary:hover { background-color: #7f8c8d; }
+        .clear-search {
+            color: #7f8c8d;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            padding: 10px 20px;
+            border-radius: 4px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .alert-info {
+            background-color: #e8f4fd;
+            border-left: 4px solid #3498db;
+        }
+        .empty-message {
+            text-align: center;
+            padding: 50px;
+            background: white;
+            border-radius: 8px;
+            color: #7f8c8d;
+        }
+        .footer {
+            background-color: #2c3e50;
+            color: #bdc3c7;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <a href="/" th:href="@{/}" class="logo">Travel<span>Dream</span></a>
+    <div class="nav-links">
+        <a href="/" th:href="@{/}">Главная</a>
+        <a href="/tours" th:href="@{/tours}">Туры</a>
+        <a th:if="${isAuthenticated}" th:href="@{/client/dashboard}">Личный кабинет</a>
+        <a th:if="${isAuthenticated and (userRole == 'ADMIN' or userRole == 'MANAGER')}" th:href="@{/clients}">Управление</a>
+        <div class="auth-buttons" th:unless="${isAuthenticated}">
+            <a th:href="@{/login}">Вход</a>
+            <a th:href="@{/register}">Регистрация</a>
+        </div>
+        <span th:if="${isAuthenticated}">
+                <span th:text="${userName}"></span> |
+                <a th:href="@{/logout}">Выйти</a>
+            </span>
+    </div>
+</div>
+
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1>Туры и направления</h1>
+        <a th:if="${userRole == 'ADMIN' or userRole == 'MANAGER'}" th:href="@{/tours/add}" class="btn">Добавить тур</a>
+    </div>
+
+    <div class="search-section">
+        <h2>Поиск туров</h2>
+        <form th:action="@{/tours}" method="get">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Страна</label>
+                    <input type="text" name="country" th:value="${param.country}">
+                </div>
+                <div class="form-group">
+                    <label>Город</label>
+                    <input type="text" name="city" th:value="${param.city}">
+                </div>
+                <div class="form-group">
+                    <label>Цена от</label>
+                    <input type="number" name="minPrice" th:value="${param.minPrice}">
+                </div>
+                <div class="form-group">
+                    <label>Цена до</label>
+                    <input type="number" name="maxPrice" th:value="${param.maxPrice}">
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn">Найти</button>
+                <a th:href="@{/tours}" class="clear-search">Сбросить</a>
+            </div>
+        </form>
+    </div>
+
+    <div th:if="${searchMessage}" class="alert alert-info" th:text="${searchMessage}"></div>
+
+    <div th:if="${tours.empty}" class="empty-message">
+        <p>Туры не найдены.</p>
+    </div>
+
+    <!-- Здесь можно добавить вывод туров, если они есть, но для простоты оставляем как есть -->
+</div>
+
+<div class="footer">
+    <p>© 2025 TravelDream Agency. Все права защищены.</p>
+</div>
+</body>
+</html>
